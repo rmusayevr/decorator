@@ -1,58 +1,168 @@
+from io import StringIO
+from unittest.mock import patch
+
+from pytemplate.entrypoints.cli.main import main
 from src.pytemplate.domain.models import Movie, movie_factory
 from src.pytemplate.service.checkout import Checkout
+
+# from src.pytemplate.utils.decorator import age_limit_6plus, age_limit_13plus, age_limit_18plus
 
 
 def test_init_movie():
     movie = Movie("The Matrix", 15)
     assert movie.name == "The Matrix"
-    assert movie.age_limit == 15
+    assert movie.customer_age == 15
 
 
 def test_movie_factory():
-    name, age_limit = "Dune: Part Two", 2024
-    movie = movie_factory(name, age_limit)
+    name, customer_age = "Dune: Part Two", 21
+    movie = movie_factory(name, customer_age)
     assert isinstance(movie, Movie)
     assert movie.name == name
-    assert movie.age_limit == age_limit
+    assert movie.customer_age == customer_age
+
+
+# def test_allowed_6plus_decorator():
+#     @age_limit_6plus
+#     def check_age_limit(movie: Movie):
+#         return f"You are allowed to watch {movie.name}."
+
+#     movie = Movie("Frozen", 9)
+#     assert check_age_limit(movie) == "You are allowed to watch Frozen."
+
+
+# def test_not_allowed_6plus_decorator():
+#     @age_limit_6plus
+#     def check_age_limit(movie: Movie):
+#         return f"You are allowed to watch {movie.name}."
+
+#     movie = Movie("Frozen", 4)
+#     assert check_age_limit(movie) == "Sorry, you are not old enough to watch Frozen."
+
+
+# def test_allowed_13plus_decorator():
+#     @age_limit_13plus
+#     def check_age_limit(movie: Movie):
+#         return f"You are allowed to watch {movie.name}."
+
+#     movie = Movie("Lady Bird", 15)
+#     assert check_age_limit(movie) == "You are allowed to watch Lady Bird."
+
+
+# def test_not_allowed_13plus_decorator():
+#     @age_limit_13plus
+#     def check_age_limit(movie: Movie):
+#         return f"You are allowed to watch {movie.name}."
+
+#     movie = Movie("Lady Bird", 10)
+#     assert check_age_limit(movie) == "Sorry, you are not old enough to watch Lady Bird."
+
+
+# def test_allowed_18plus_decorator():
+#     @age_limit_18plus
+#     def check_age_limit(movie: Movie):
+#         return f"You are allowed to watch {movie.name}."
+
+#     movie = Movie("Interstellar", 21)
+#     assert check_age_limit(movie) == "You are allowed to watch Interstellar."
+
+
+# def test_not_allowed_18plus_decorator():
+#     @age_limit_18plus
+#     def check_age_limit(movie: Movie):
+#         return f"You are allowed to watch {movie.name}."
+
+#     movie = Movie("Interstellar", 15)
+#     assert check_age_limit(movie) == "Sorry, you are not old enough to watch Interstellar."
 
 
 def test_buy_ticket_for_children_allowed():
     checkout = Checkout()
-    movie = Movie(name="Children's Movie", age_limit=6)
+    movie = Movie("Migration", 6)
     result = checkout.buy_ticket_for_children(movie)
-    assert result == "You are allowed to watch the Children's Movie. Enjoy it!"
+    assert result == "You are allowed to watch Migration."
 
 
 def test_buy_ticket_for_children_not_allowed():
     checkout = Checkout()
-    movie = Movie(name="Children's Movie", age_limit=4)
+    movie = Movie("Migration", 4)
     result = checkout.buy_ticket_for_children(movie)
-    assert result == "Sorry, you are not old enough to watch the Children's Movie."
+    assert result == "Sorry, you are not old enough to watch Migration."
 
 
 def test_buy_ticket_for_teens_allowed():
     checkout = Checkout()
-    movie = Movie(name="Teenage Movie", age_limit=15)
+    movie = Movie("Easy A", 13)
     result = checkout.buy_ticket_for_teens(movie)
-    assert result == "You are allowed to watch the Teenage Movie. Enjoy it!"
+    assert result == "You are allowed to watch Easy A."
 
 
 def test_buy_ticket_for_teens_not_allowed():
     checkout = Checkout()
-    movie = Movie(name="Teenage Movie", age_limit=10)
+    movie = Movie("Easy A", 10)
     result = checkout.buy_ticket_for_teens(movie)
-    assert result == "Sorry, you are not old enough to watch the Teenage Movie."
+    assert result == "Sorry, you are not old enough to watch Easy A."
 
 
 def test_buy_ticket_for_adults_allowed():
     checkout = Checkout()
-    movie = Movie(name="Adult Movie", age_limit=18)
+    movie = Movie("The Nice Guys", 18)
     result = checkout.buy_ticket_for_adults(movie)
-    assert result == "You are allowed to watch the Adult Movie. Enjoy it!"
+    assert result == "You are allowed to watch The Nice Guys."
 
 
 def test_buy_ticket_for_adults_not_allowed():
     checkout = Checkout()
-    movie = Movie(name="Adult Movie", age_limit=16)
+    movie = Movie("The Nice Guys", 16)
     result = checkout.buy_ticket_for_adults(movie)
-    assert result == "Sorry, you are not old enough to watch the Adult Movie."
+    assert result == "Sorry, you are not old enough to watch The Nice Guys."
+
+
+@patch("builtins.input", side_effect=["Ponyo", 8, 6])
+def test_main_allowed_6plus(mock_input):
+    with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+        main()
+        assert mock_stdout.getvalue().strip() == "You are allowed to watch Ponyo."
+
+
+@patch("builtins.input", side_effect=["Ponyo", 4, 6])
+def test_main_not_allowed_6plus(mock_input):
+    with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+        main()
+        assert mock_stdout.getvalue().strip() == "Sorry, you are not old enough to watch Ponyo."
+
+
+@patch("builtins.input", side_effect=["Monster", 14, 13])
+def test_main_allowed_13plus(mock_input):
+    with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+        main()
+        assert mock_stdout.getvalue().strip() == "You are allowed to watch Monster."
+
+
+@patch("builtins.input", side_effect=["Monster", 12, 13])
+def test_main_not_allowed_13plus(mock_input):
+    with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+        main()
+        assert mock_stdout.getvalue().strip() == "Sorry, you are not old enough to watch Monster."
+
+
+@patch("builtins.input", side_effect=["The Hunt", 21, 18])
+def test_main_allowed_18plus(mock_input):
+    with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+        main()
+        assert mock_stdout.getvalue().strip() == "You are allowed to watch The Hunt."
+
+
+@patch("builtins.input", side_effect=["The Hunt", 15, 18])
+def test_main_not_allowed_18plus(mock_input):
+    with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+        main()
+        assert mock_stdout.getvalue().strip() == "Sorry, you are not old enough to watch The Hunt."
+
+
+
+@patch("builtins.input", side_effect=["The Hunt", 21, 0])
+def test_main_invalid_action(mock_input):
+    with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+        main()
+        assert mock_stdout.getvalue().strip() == "Invalid action! Please choose 6/13/18."
