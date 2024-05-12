@@ -5,8 +5,6 @@ from pytemplate.entrypoints.cli.main import main
 from src.pytemplate.domain.models import Movie, movie_factory
 from src.pytemplate.service.checkout import Checkout
 
-# from src.pytemplate.utils.decorator import age_limit_6plus, age_limit_13plus, age_limit_18plus
-
 
 def test_init_movie():
     movie = Movie("The Matrix", 15)
@@ -20,60 +18,6 @@ def test_movie_factory():
     assert isinstance(movie, Movie)
     assert movie.name == name
     assert movie.customer_age == customer_age
-
-
-# def test_allowed_6plus_decorator():
-#     @age_limit_6plus
-#     def check_age_limit(movie: Movie):
-#         return f"You are allowed to watch {movie.name}."
-
-#     movie = Movie("Frozen", 9)
-#     assert check_age_limit(movie) == "You are allowed to watch Frozen."
-
-
-# def test_not_allowed_6plus_decorator():
-#     @age_limit_6plus
-#     def check_age_limit(movie: Movie):
-#         return f"You are allowed to watch {movie.name}."
-
-#     movie = Movie("Frozen", 4)
-#     assert check_age_limit(movie) == "Sorry, you are not old enough to watch Frozen."
-
-
-# def test_allowed_13plus_decorator():
-#     @age_limit_13plus
-#     def check_age_limit(movie: Movie):
-#         return f"You are allowed to watch {movie.name}."
-
-#     movie = Movie("Lady Bird", 15)
-#     assert check_age_limit(movie) == "You are allowed to watch Lady Bird."
-
-
-# def test_not_allowed_13plus_decorator():
-#     @age_limit_13plus
-#     def check_age_limit(movie: Movie):
-#         return f"You are allowed to watch {movie.name}."
-
-#     movie = Movie("Lady Bird", 10)
-#     assert check_age_limit(movie) == "Sorry, you are not old enough to watch Lady Bird."
-
-
-# def test_allowed_18plus_decorator():
-#     @age_limit_18plus
-#     def check_age_limit(movie: Movie):
-#         return f"You are allowed to watch {movie.name}."
-
-#     movie = Movie("Interstellar", 21)
-#     assert check_age_limit(movie) == "You are allowed to watch Interstellar."
-
-
-# def test_not_allowed_18plus_decorator():
-#     @age_limit_18plus
-#     def check_age_limit(movie: Movie):
-#         return f"You are allowed to watch {movie.name}."
-
-#     movie = Movie("Interstellar", 15)
-#     assert check_age_limit(movie) == "Sorry, you are not old enough to watch Interstellar."
 
 
 def test_buy_ticket_for_children_allowed():
@@ -158,7 +102,6 @@ def test_main_not_allowed_18plus(mock_input):
     with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
         main()
         assert mock_stdout.getvalue().strip() == "Sorry, you are not old enough to watch The Hunt."
-
 
 
 @patch("builtins.input", side_effect=["The Hunt", 21, 0])
